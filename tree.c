@@ -10,7 +10,7 @@
 #include <string.h>
 
 struct foo {
-    char ch;
+    char *ch;
     struct foo *lc;
     struct foo *rc;
 };
@@ -43,8 +43,8 @@ Node* pop(Stack *head) {
     return pop(head->next);
 }
 
-int isOperator(char ch) {
-    switch (ch) {
+int isOperator(char *ch) {
+    switch (*ch) {
         case '+':
         case '-':
         case '*':
@@ -58,13 +58,13 @@ int isOperator(char ch) {
 void inorder(Node *root) {
     if (!root) return;
     inorder(root->lc);
-    printf("%c ", root->ch);
+    printf("%s ", root->ch);
     inorder(root->rc);
 }
 
 void preorder(Node *root) {
     if (!root) return;
-    printf("%c ", root->ch);
+    printf("%s ", root->ch);
     preorder(root->lc);
     preorder(root->rc);
 }
@@ -73,15 +73,15 @@ void postorder(Node *root) {
     if (!root) return;
     postorder(root->lc);
     postorder(root->rc);
-    printf("%c ", root->ch);
+    printf("%s ", root->ch);
 }
 
 int evaluate(Node *root) {
     if (root) {
-        if (!isOperator(root->ch)) return (int)root->ch-48;
+        if (!isOperator(root->ch)) return atoi(root->ch);
         int a = evaluate(root->lc);
         int b = evaluate(root->rc);        
-        switch (root->ch) {
+        switch (*root->ch) {
             case '+':
                 return a+b;                
             case '-':
@@ -95,14 +95,13 @@ int evaluate(Node *root) {
 }
 
 int main(int argc, char** argv) {
-    char postfix[100], letter;
+    char postfix[100], delim[2] = " ";
     printf("Enter (postfix) expression: ");
-    scanf("%s", postfix);
+    scanf("%[^\n]", postfix);
     Stack *head = NULL;
-    int len = strlen(postfix), i = 0;
-    while (i < len) {
-        letter = postfix[i];
-        if (isOperator(letter)) {
+    char *token = strtok(postfix, delim);
+    while (token) {        
+        if (isOperator(token)) {
             Node *a, *b;
             if (head) {                
                 if (head->next == NULL) {
@@ -125,7 +124,7 @@ int main(int argc, char** argv) {
                 goto exit;
             }
             Node *n = (Node *)malloc(sizeof(Node));
-                n->ch = letter;
+                n->ch = token;
                 n->rc = a;
                 n->lc = b;
                 if (head == NULL) {
@@ -137,7 +136,7 @@ int main(int argc, char** argv) {
         }
         else {
             Node *ptr = (Node *)malloc(sizeof(Node));
-            ptr->ch = letter;
+            ptr->ch = token;
             ptr->lc = NULL;
             ptr->rc = NULL;
             if (head == NULL) {
@@ -147,7 +146,7 @@ int main(int argc, char** argv) {
             }
             else push(ptr, head);
         }
-        i++;
+        token = strtok(NULL, delim);
     }
     printf("The inorder traversal is: ");
     inorder(head->node);
